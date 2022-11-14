@@ -1,3 +1,2 @@
-run:
-	pyinstaller --onefile tile.py
-	mv ./dist/tile .
+all:
+	g++ tile.cpp -o tile

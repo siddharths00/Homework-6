@@ -1,98 +1,252 @@
 #include <bits/stdc++.h>
 using namespace std;
+int getId(int x, int y, int n)
+{
+    return x * n + y + 1;
+}
+std::string coord(int id, int n)
+{
 
-bool solve(vector<vector<int> >floor, vector<pair<pair<int, int>, pair<int, int> > > &tiles, int total, int r, int c, int n) {
-    if(r>n and c>n)return false;
-    if(c>n){
-        c=1;
-        r+=1;
+    if (id > 0)
+    {
+        std::string str = "(";
+        if (id % n == 0)
+        {
+            str += std::to_string(id / n);
+        }
+        else
+        {
+            str += std::to_string(id / n + 1);
+        }
+
+        str += ",";
+        if (id % n == 0)
+        {
+            str += std::to_string(n);
+        }
+        else
+        {
+            str += std::to_string(id % n);
+        }
+
+        str += ")";
+        return str;
     }
-    bool one=false, two=false;
-    if(total==0) {
-        // cout<<"TRUE\n";
+    return "";
+}
+
+bool dfs(std::unordered_set<int> &visited, std::map<int, std::vector<int>> &graph, int s, int t)
+{
+    if (s == t)
+    {
         return true;
     }
-    for(int i=r; i<=n; i++) {
-        for(int j=c; j<=n; j++) {
-            if(floor[i][j]==1 and floor[i][j+1]==1) {
-                floor[i][j]=0;
-                floor[i][j+1]=0;
-                // cout<<"Checking for\n";
-                // for(int k=1; k<=n; k++) {
-                //     for(int l=1; l<=n; l++) {
-                //         cout<<floor[k][l];
-                //     }
-                //     cout<<"\n";
-                // }
-                // cout<<"\n";
-                one=solve(floor, tiles, total-2, i, j+2, n);
-                // cout<<one<<"<=\n";
-                floor[i][j]=1;
-                floor[i][j+1]=1;
-                if(one) {
-                    tiles.push_back(make_pair(make_pair(i, j), make_pair(i, j+1)));
-                    return true;
-                }
-            }
-            if(floor[i][j]==1 and floor[i+1][j]==1) {
-                floor[i][j]=0;
-                floor[i+1][j]=0;
-                // cout<<"Checking for\n";
-                // for(int k=1; k<=n; k++) {
-                //     for(int l=1; l<=n; l++) {
-                //         cout<<floor[k][l];
-                //     }
-                //     cout<<"\n";
-                // }
-                // cout<<"\n";
-                two=solve(floor, tiles, total-2, i, j+1, n);
-                // cout<<two<<"<=\n";
-                floor[i][j]=1;
-                floor[i+1][j]=1;
-                if(two) {
-                    tiles.push_back(make_pair(make_pair(i, j), make_pair(i+1, j)));
-                    return true;
-                }
-            }
+    std::unordered_set<int>::iterator it = visited.find(s);
+    if (it != visited.end())
+    {
+        return false;
+    }
+
+    visited.insert(s);
+    std::vector<int> list = graph[s];
+    for (std::vector<int>::iterator it1 = list.begin(); it1 != list.end(); ++it1)
+    {
+        if (dfs(visited, graph, *it1, t))
+        {
+            graph[s].erase(std::remove(graph[s].begin(), graph[s].end(), *it1), graph[s].end());
+            graph[*it1].push_back(s);
+            return true;
         }
     }
     return false;
 }
 
-int main(){
-#ifndef GRADESCOPE
+std::vector<int> getNeighbors(std::vector<std::vector<int>> &graph, int x, int y, int n)
+{
+    std::vector<int> list;
+    if (x == 0)
+    {
+        if (y == 0)
+        {
+            if (n > 1)
+            {
+                if (graph[x][y + 1] == 1)
+                    list.push_back(getId(x, y + 1, n));
+                if (graph[x + 1][y] == 1)
+                    list.push_back(getId(x + 1, y, n));
+            }
+        }
+        else if (y == n - 1)
+        {
+            if (n > 1)
+            {
+                if (graph[x][y - 1] == 1)
+                    list.push_back(getId(x, y - 1, n));
+                if (graph[x + 1][y] == 1)
+                    list.push_back(getId(x + 1, y, n));
+            }
+        }
+        else
+        {
+            if (graph[x][y - 1] == 1)
+                list.push_back(getId(x, y - 1, n));
+            if (graph[x][y + 1] == 1)
+                list.push_back(getId(x, y + 1, n));
+            if (graph[x + 1][y] == 1)
+                list.push_back(getId(x + 1, y, n));
+        }
+    }
+    else if (x == n - 1)
+    {
+        if (y == 0)
+        {
+            if (n > 1)
+            {
+                if (graph[x - 1][y] == 1)
+                    list.push_back(getId(x - 1, y, n));
+                if (graph[x][y + 1] == 1)
+                    list.push_back(getId(x, y + 1, n));
+            }
+        }
+        else if (y == n - 1)
+        {
+            if (n > 1)
+            {
+                if (graph[x - 1][y] == 1)
+                    list.push_back(getId(x - 1, y, n));
+                if (graph[x][y - 1] == 1)
+                    list.push_back(getId(x, y - 1, n));
+            }
+        }
+        else
+        {
+            if (graph[x - 1][y] == 1)
+                list.push_back(getId(x - 1, y, n));
+            if (graph[x][y - 1] == 1)
+                list.push_back(getId(x, y - 1, n));
+            if (graph[x][y + 1] == 1)
+                list.push_back(getId(x, y + 1, n));
+        }
+    }
+    else
+    {
+        if (y == 0)
+        {
+            if (graph[x - 1][y] == 1)
+                list.push_back(getId(x - 1, y, n));
+            if (graph[x][y + 1] == 1)
+                list.push_back(getId(x, y + 1, n));
+            if (graph[x + 1][y] == 1)
+                list.push_back(getId(x + 1, y, n));
+        }
+        else if (y == n - 1)
+        {
+            if (graph[x - 1][y] == 1)
+                list.push_back(getId(x - 1, y, n));
+            if (graph[x][y - 1] == 1)
+                list.push_back(getId(x, y - 1, n));
+            if (graph[x + 1][y] == 1)
+                list.push_back(getId(x + 1, y, n));
+        }
+        else
+        {
+            if (graph[x - 1][y] == 1)
+                list.push_back(getId(x - 1, y, n));
+            if (graph[x][y - 1] == 1)
+                list.push_back(getId(x, y - 1, n));
+            if (graph[x][y + 1] == 1)
+                list.push_back(getId(x, y + 1, n));
+            if (graph[x + 1][y] == 1)
+                list.push_back(getId(x + 1, y, n));
+        }
+    }
+    return list;
+}
+
+int main()
+{
+    
+    std::string line;
+    #ifndef GRADESCOPE
     freopen("input.txt", "r", stdin);
     freopen("output.txt", "w", stdout);
-#endif
+    #endif
 
     int n;
     string input;
     cin >> input;
-
     n = stoi(input);
     int total=0;
     vector<vector<int> >floor(n+2, vector<int>(n+2,0));
-    for(int i=1; i<=n; i++) {
+    for(int i=0; i<n; i++) {
        cin >> input;
-       for(int j=1; j<=n; j++) {       
-		    floor[i][j]=input[j-1]-'0';	
+    
+       for(int j=0; j<n; j++) {       
+		    floor[i][j]=input[j]-'0';	
             total+=floor[i][j];
 	    }
     }
-    if(total%2) {
+    int sizeA = 0, sizeB = 0;
+    std::map<int, std::vector<int>> graph;
+    
+        /* convert to bipartite */
+        std::vector<int> vecA;
+        std::vector<int> vecB;
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                int id = n * i + j + 1;
+                if (floor[i][j] == 1)
+                {
+                    if ((i + j) % 2 == 0)
+                    {
+                        ++sizeA;
+                        vecA.push_back(id);
+                        graph[id] = getNeighbors(floor, i, j, n);
+                    }
+                    else
+                    {
+                        ++sizeB;
+                        vecB.push_back(id);
+                        std::vector<int> b;
+                        b.push_back(0);
+                        graph[id] = b;
+                    }
+                }
+            }
+        }
+        graph[-1] = vecA;
+        if (sizeA == sizeB)
+        {
+            std::unordered_set<int> visited;
+            int flow = 0;
+
+            while (dfs(visited, graph, -1, 0))
+            {
+                ++flow;
+                visited.clear();
+            }
+
+            if (flow == sizeA)
+            {
+                cout<<1<<"\n";
+                for (std::vector<int>::iterator it = vecB.begin(); it != vecB.end();)
+                {
+                    cout << coord(*it, n) << coord(graph[*it][0], n);
+                    ++it;
+                    if (it == vecB.end())
+                    {
+                    }
+                    else
+                    {
+                        cout << std::endl;
+                    }
+                }
+                return 0;
+            }
+        }
         cout<<0;
         return 0;
-    }
-    // cout<<total<<"=====\n";
-    vector<pair<pair<int, int>, pair<int, int> > >tiles;
-    if(solve(floor, tiles, total, 1, 1, n)) {
-        cout<<"1\n";
-        for(auto p:tiles) {
-            cout<<"("<<p.first.first<<","<<p.first.second<<")";
-            cout<<"("<<p.second.first<<","<<p.second.second<<")\n";
-        }
-    }
-    else
-    cout<<0;
-    return 0;
 }
